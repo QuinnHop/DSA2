@@ -278,13 +278,13 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	//calculate internal degree for each triangle
 	float fDegree = (2 * PI) / a_nSubdivisions;
 	float offset = -a_fHeight / 2;
-	vector3 vCenter = vector3(0.0f, 0.0f, offset);
+	vector3 vCenter = vector3(0.0f, offset, 0.0f);
 	vector3 vPreviousThirdPoint = vCenter;
-	vector3 vTop = vector3(0.0f, 0.0f, a_fHeight+offset);//the top of the cone
+	vector3 vTop = vector3(0.0f, a_fHeight+offset, 0.0f);//the top of the cone
 	for (int i = 0; i < a_nSubdivisions; i++) {
 
 		float fXValue;
-		float fYValue;
+		float fZValue;
 		vector3 vSecondPoint;
 		vector3 vThirdPoint;
 		
@@ -294,9 +294,9 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 			//center is always point 1 so we must calculate points 2 and 3
 			//xy for point 2
 			fXValue = a_fRadius * cos(fDegree * i);
-			fYValue = a_fRadius * sin(fDegree * i);
+			fZValue = a_fRadius * sin(fDegree * i);
 
-			vSecondPoint = vector3(fXValue, fYValue, offset);
+			vSecondPoint = vector3(fXValue, offset, fZValue);
 		}
 		else {//previous second point has already been set
 			vSecondPoint = vPreviousThirdPoint;
@@ -304,9 +304,9 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 
 		//xy for point 3
 		fXValue = a_fRadius * cos(fDegree * (i + 1));
-		fYValue = a_fRadius * sin(fDegree * (i + 1));
+		fZValue = a_fRadius * sin(fDegree * (i + 1));
 
-		vThirdPoint = vector3(fXValue, fYValue, offset);
+		vThirdPoint = vector3(fXValue, offset, fZValue);
 		vPreviousThirdPoint = vThirdPoint;//sets this to save repeating it during the next itteration
 
 		//draw the triangle
@@ -343,15 +343,13 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	float fDegree = (2 * PI) / a_nSubdivisions;
 	float offset = -a_fHeight / 2;
 
-	vector3 vCenter = vector3(0.0f, 0.0f, offset);
-
-	
+	vector3 vCenter = vector3(0.0f, offset, 0.0f);
 	vector3 vPreviousThirdPoint = vCenter;
 	
 	for (int i = 0; i < a_nSubdivisions; i++) {
 
 		float fXValue;
-		float fYValue;
+		float fZValue;
 		vector3 vSecondPoint;
 		vector3 vThirdPoint;
 
@@ -361,9 +359,9 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 			//center is always point 1 so we must calculate points 2 and 3
 			//xy for point 2
 			fXValue = a_fRadius * cos(fDegree * i);
-			fYValue = a_fRadius * sin(fDegree * i);
+			fZValue = a_fRadius * sin(fDegree * i);
 
-			vSecondPoint = vector3(fXValue, fYValue, offset);
+			vSecondPoint = vector3(fXValue, offset, fZValue);
 		}
 		else {//previous second point has already been set
 			vSecondPoint = vPreviousThirdPoint;
@@ -371,19 +369,20 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 		
 		//xy for point 3
 		fXValue = a_fRadius * cos(fDegree * (i + 1));
-		fYValue = a_fRadius * sin(fDegree * (i + 1));
+		fZValue = a_fRadius * sin(fDegree * (i + 1));
 
-		vThirdPoint = vector3(fXValue, fYValue, offset);
+		vThirdPoint = vector3(fXValue, offset, fZValue);
 		vPreviousThirdPoint = vThirdPoint;//sets this to save repeating it during the next itteration
 
 		//draw the triangles for first circle
 		
-		AddTri(vCenter, vThirdPoint, vSecondPoint);//draws the triangle for base with correct direction for bottom circle
+		//TODO: Fix this
+		AddTri(vCenter, vSecondPoint, vThirdPoint);//draws the triangle for base with correct direction for bottom circle
 		//draws circle for top of cylinder
-		AddTri(vector3(vCenter.x, vCenter.y, offset + a_fHeight),  vector3(vSecondPoint.x, vSecondPoint.y, offset + a_fHeight), vector3(vThirdPoint.x, vThirdPoint.y, offset + a_fHeight));
+		AddTri(vector3(vCenter.x, offset + a_fHeight, vCenter.z),   vector3(vThirdPoint.x, offset + a_fHeight, vThirdPoint.z), vector3(vSecondPoint.x, offset + a_fHeight, vSecondPoint.z));
 		
 		//Draws quads to connect top and bottom of cylinder
-		AddQuad( vector3(vThirdPoint.x, vThirdPoint.y, offset + a_fHeight), vector3(vSecondPoint.x, vSecondPoint.y, offset + a_fHeight), vThirdPoint, vSecondPoint);
+		AddQuad(  vThirdPoint, vSecondPoint, vector3(vThirdPoint.x, offset + a_fHeight, vThirdPoint.z), vector3(vSecondPoint.x, offset + a_fHeight, vSecondPoint.z));
 	}
 
 	// Adding information about color
@@ -412,10 +411,78 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//this function has the z and y switched correctly
+	float fDegree = (2 * PI) / a_nSubdivisions;
+	float offset = -a_fHeight / 2;
 
+	
+	vector3 vCenter = vector3(0.0f, offset, 0.0f);
+	vector3 vInnerPreviousThirdPoint = vCenter;
+	vector3 vOuterPreviousThirdPoint = vCenter;
+	
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		float fInnerValueX;
+		float fInnerValueZ;
+		float fOuterValueX;
+		float fOuterValueZ;
+		vector3 vInnerSecondPoint;
+		vector3 vOuterSecondPoint;
+		vector3 vInnerThirdPoint;
+		vector3 vOuterThirdPoint;
+		
+
+		//if the previous second point is equal to the center point then this is the first itteration,
+		//and the previous second point must be set
+		if (vInnerPreviousThirdPoint == vCenter && vOuterPreviousThirdPoint == vCenter) {
+
+			//center is always point 1 so we must calculate points 2 and 3
+				//xz for point 2
+			fInnerValueX = a_fInnerRadius * cos(fDegree * i);
+			fInnerValueZ = a_fInnerRadius * sin(fDegree * i);
+
+			fOuterValueX = a_fOuterRadius * cos(fDegree * i);
+			fOuterValueZ = a_fOuterRadius * sin(fDegree * i);
+
+			vInnerSecondPoint = vector3(fInnerValueX, offset, fInnerValueZ);
+			vOuterSecondPoint = vector3(fOuterValueX, offset, fOuterValueZ);
+		}
+		else {//previous second point has already been set
+			vInnerSecondPoint = vInnerPreviousThirdPoint;
+			vOuterSecondPoint = vOuterPreviousThirdPoint;
+		}
+		
+		//settting coordinates for inner and outer points
+		fInnerValueX = a_fInnerRadius * cos(fDegree * (i + 1));
+		fInnerValueZ = a_fInnerRadius * sin(fDegree * (i + 1));
+		fOuterValueX = a_fOuterRadius * cos(fDegree * (i + 1));
+		fOuterValueZ = a_fOuterRadius * sin(fDegree * (i + 1));
+
+		vInnerThirdPoint = vector3(fInnerValueX, offset, fInnerValueZ);
+		vOuterThirdPoint = vector3(fOuterValueX, offset, fOuterValueZ);
+		vInnerPreviousThirdPoint = vInnerThirdPoint;//sets this to save repeating it during the next itteration
+		vOuterPreviousThirdPoint = vOuterThirdPoint;
+
+		
+
+
+		//Make new vectors lower to represent the bottom of the shape
+		vector3 vOuterSecondPointBottom = vector3(vOuterSecondPoint.x, offset + a_fHeight, vOuterSecondPoint.z);
+		vector3 vOuterThirdPointBottom = vector3(vOuterThirdPoint.x, offset + a_fHeight, vOuterThirdPoint.z);
+		vector3 vInnerSecondPointBottom = vector3(vInnerSecondPoint.x, offset + a_fHeight, vInnerSecondPoint.z);
+		vector3 vInnerThirdPointBottom = vector3(vInnerThirdPoint.x, offset + a_fHeight, vInnerThirdPoint.z);
+
+
+		//draw quads connecting points
+
+		//add bottom of tube
+		AddQuad(vOuterThirdPointBottom, vOuterSecondPointBottom, vInnerThirdPointBottom, vInnerSecondPointBottom);
+		//across top of tube
+		AddQuad(vInnerThirdPoint, vInnerSecondPoint, vOuterThirdPoint, vOuterSecondPoint);
+
+		//add sides of cube
+		AddQuad( vOuterSecondPointBottom, vOuterThirdPointBottom, vOuterSecondPoint, vOuterThirdPoint);
+		AddQuad(vInnerSecondPoint, vInnerThirdPoint, vInnerSecondPointBottom, vInnerThirdPointBottom);
+	}
 	// Adding information about color
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
@@ -466,13 +533,46 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	if (a_nSubdivisions > 6)
 		a_nSubdivisions = 6;
 
+	
+
+
+
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//variables
+	float offset = -a_fRadius;
+	float xy, x, y, z;
+	float radius = (a_fRadius / (a_nSubdivisions / 2));
 
+	//The sphere is constructed out of a_nSubdivision circles and 2 points, with the radius of each circle being radius = (a_fRadius/(a_nSubdivisions/2))
+
+
+
+	//looping through all the layers
+	for (int i = 0; i < a_nSubdivisions; i++) {//I can be considered the horizontal pieces of the sphere
+		
+											   //iangle rpresents the angle the point is at compared to the origin in vertical sector
+		float iAngle = PI / 2 - i * (PI / a_nSubdivisions);
+		
+		xy = radius * cosf(iAngle);
+		z = radius * sinf(iAngle);
+		
+		//looping through all the points on a layer
+		for (int j = 0; j < a_nSubdivisions; j++) {//j can be considered the vertical pieces of the sphere
+			
+				
+			//jAngle represents the angle to the point in the horizontal sector
+			float jAngle = j * (2 * PI / a_nSubdivisions);
+			
+			x = xy * cosf(jAngle);
+			y = xy * sinf(jAngle);
+
+			
+		}
+	}
+
+	
 	// Adding information about color
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
