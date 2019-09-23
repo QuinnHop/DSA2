@@ -275,9 +275,48 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//calculate internal degree for each triangle
+	float fDegree = (2 * PI) / a_nSubdivisions;
+	float offset = -a_fHeight / 2;
+	vector3 vCenter = vector3(0.0f, 0.0f, offset);
+	vector3 vPreviousThirdPoint = vCenter;
+	vector3 vTop = vector3(0.0f, 0.0f, a_fHeight+offset);//the top of the cone
+	for (int i = 0; i < a_nSubdivisions; i++) {
+
+		float fXValue;
+		float fYValue;
+		vector3 vSecondPoint;
+		vector3 vThirdPoint;
+		
+		//if the previous second point is equal to the center point then this is the first itteration,
+		//and the previous second point must be set
+		if (vPreviousThirdPoint == vCenter) {
+			//center is always point 1 so we must calculate points 2 and 3
+			//xy for point 2
+			fXValue = a_fRadius * cos(fDegree * i);
+			fYValue = a_fRadius * sin(fDegree * i);
+
+			vSecondPoint = vector3(fXValue, fYValue, offset);
+		}
+		else {//previous second point has already been set
+			vSecondPoint = vPreviousThirdPoint;
+		}
+
+		//xy for point 3
+		fXValue = a_fRadius * cos(fDegree * (i + 1));
+		fYValue = a_fRadius * sin(fDegree * (i + 1));
+
+		vThirdPoint = vector3(fXValue, fYValue, offset);
+		vPreviousThirdPoint = vThirdPoint;//sets this to save repeating it during the next itteration
+
+		//draw the triangle
+		AddTri(vCenter, vThirdPoint, vSecondPoint);//draws the triangle for base with correct direction
+		AddTri(vTop, vSecondPoint, vThirdPoint);//draws triangle for height
+	}
+
+
+
+
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -299,9 +338,53 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//for generateCylinder we will create two circles and use the GenerateQuad method to attach the two circles
+	//calculate internal degree for each triangle
+	float fDegree = (2 * PI) / a_nSubdivisions;
+	float offset = -a_fHeight / 2;
+
+	vector3 vCenter = vector3(0.0f, 0.0f, offset);
+
+	
+	vector3 vPreviousThirdPoint = vCenter;
+	
+	for (int i = 0; i < a_nSubdivisions; i++) {
+
+		float fXValue;
+		float fYValue;
+		vector3 vSecondPoint;
+		vector3 vThirdPoint;
+
+		//if the previous second point is equal to the center point then this is the first itteration,
+		//and the previous second point must be set
+		if (vPreviousThirdPoint == vCenter) {
+			//center is always point 1 so we must calculate points 2 and 3
+			//xy for point 2
+			fXValue = a_fRadius * cos(fDegree * i);
+			fYValue = a_fRadius * sin(fDegree * i);
+
+			vSecondPoint = vector3(fXValue, fYValue, offset);
+		}
+		else {//previous second point has already been set
+			vSecondPoint = vPreviousThirdPoint;
+		}
+		
+		//xy for point 3
+		fXValue = a_fRadius * cos(fDegree * (i + 1));
+		fYValue = a_fRadius * sin(fDegree * (i + 1));
+
+		vThirdPoint = vector3(fXValue, fYValue, offset);
+		vPreviousThirdPoint = vThirdPoint;//sets this to save repeating it during the next itteration
+
+		//draw the triangles for first circle
+		
+		AddTri(vCenter, vThirdPoint, vSecondPoint);//draws the triangle for base with correct direction for bottom circle
+		//draws circle for top of cylinder
+		AddTri(vector3(vCenter.x, vCenter.y, offset + a_fHeight),  vector3(vSecondPoint.x, vSecondPoint.y, offset + a_fHeight), vector3(vThirdPoint.x, vThirdPoint.y, offset + a_fHeight));
+		
+		//Draws quads to connect top and bottom of cylinder
+		AddQuad( vector3(vThirdPoint.x, vThirdPoint.y, offset + a_fHeight), vector3(vSecondPoint.x, vSecondPoint.y, offset + a_fHeight), vThirdPoint, vSecondPoint);
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);

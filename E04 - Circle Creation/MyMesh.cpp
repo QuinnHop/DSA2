@@ -16,6 +16,40 @@ void MyMesh::GenerateCircle(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		Calculate a_nSubdivisions number of points around a center point in a radial manner
 		then call the AddTri function to generate a_nSubdivision number of faces
 	*/
+	//calculate internal degree for each triangle
+	float fDegree = (2 * PI) / a_nSubdivisions;
+	vector3 vCenter = vector3(0.0f);
+	vector3 vPreviousThirdPoint(0.0f);
+	for (int i = 0; i < a_nSubdivisions; i++) {
+
+		float fXValue;
+		float fYValue;
+		vector3 vSecondPoint;
+		vector3 vThirdPoint;
+		//if the previous second point is equal to the center point then this is the first itteration,
+		//and the previous second point must be set
+		if (vPreviousThirdPoint == vCenter) {
+			//center is always point 1 so we must calculate points 2 and 3
+			//xy for point 2
+			fXValue = a_fRadius * cos(fDegree * i);
+			fYValue = a_fRadius * sin(fDegree * i);
+
+			vSecondPoint = vector3(fXValue, fYValue, 0.0f);
+		}
+		else {//previous second point has already been set
+			vSecondPoint = vPreviousThirdPoint;
+		}
+
+		//xy for point 3
+		fXValue = a_fRadius * cos(fDegree * (i + 1));
+		fYValue = a_fRadius * sin(fDegree * (i + 1));
+
+		vThirdPoint = vector3(fXValue, fYValue, 0.0f);
+		vPreviousThirdPoint = vThirdPoint;//sets this to save repeating it during the next itteration
+
+		//draw the triangle
+		AddTri(vCenter, vSecondPoint, vThirdPoint);//draws the triangle
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
