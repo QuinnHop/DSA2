@@ -544,7 +544,11 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	float offset = -a_fRadius;
 	float xy, x, y, z;
 	float radius = (a_fRadius / (a_nSubdivisions / 2));
-
+	vector3 base = vector3(0.0f, offset, 0.0f);
+	vector3 leg1;
+	vector3 leg2;
+	vector3 leg3;
+	vector3 leg4;
 	//The sphere is constructed out of a_nSubdivision circles and 2 points, with the radius of each circle being radius = (a_fRadius/(a_nSubdivisions/2))
 
 
@@ -568,7 +572,47 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 			x = xy * cosf(jAngle);
 			y = xy * sinf(jAngle);
 
-			
+			//creates caps on sphere
+			if (i == 0) {
+				leg1 = vector3(x, y + offset, z);
+				
+				jAngle = (j+1) * (2 * PI / a_nSubdivisions);
+
+				x = xy * cosf(jAngle);
+				y = xy * sinf(jAngle);
+
+				leg2 = vector3(x, y+offset, z);
+
+				AddTri(base, leg1, leg2);
+				base = leg1;
+			}
+			//fills body of sphere
+			else {
+				leg1 = vector3(x, y + offset, z);
+
+				jAngle = (j + 1) * (2 * PI / a_nSubdivisions);
+
+				x = xy * cosf(jAngle);
+				y = xy * sinf(jAngle);
+
+				//simulates next level of sphere
+				iAngle = PI / 2 - (i+1) * (PI / a_nSubdivisions);
+
+				xy = radius * cosf(iAngle);
+				z = radius * sinf(iAngle);
+
+				leg2 = vector3(x, y + offset, z);
+
+				jAngle = (j + 2) * (2 * PI / a_nSubdivisions);
+
+				x = xy * cosf(jAngle);
+				y = xy * sinf(jAngle);
+
+				leg3 = vector3(x, y + offset, z);
+
+				AddQuad(base, leg1, leg2, leg3);
+				base = leg1;
+			}
 		}
 	}
 
