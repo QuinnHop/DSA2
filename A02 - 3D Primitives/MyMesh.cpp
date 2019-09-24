@@ -540,82 +540,55 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Release();
 	Init();
 
+	//The sphere is constructed by forming a cube then normalizing all the points and scaling them by the radius
+
+
 	//variables
-	float offset = -a_fRadius;
-	float xy, x, y, z;
-	float radius = (a_fRadius / (a_nSubdivisions / 2));
-	vector3 base = vector3(0.0f, offset, 0.0f);
-	vector3 leg1;
-	vector3 leg2;
-	vector3 leg3;
-	vector3 leg4;
-	//The sphere is constructed out of a_nSubdivision circles and 2 points, with the radius of each circle being radius = (a_fRadius/(a_nSubdivisions/2))
+	float offset = -a_fRadius/2;
+	
+	
+	std::vector<std::vector<vector3>> rings;//stores vector of ring vectors, eacho of which holds the coordinates for the points in its ring
+	vector3 center(0.0f, -a_fRadius/2, 0.0f);
 
 
 
-	//looping through all the layers
-	for (int i = 0; i < a_nSubdivisions; i++) {//I can be considered the horizontal pieces of the sphere
+	for (int i = 0; i < a_nSubdivisions; i++) {
+	
+		float radius = (sinf((PI / a_nSubdivisions) * i));
+		float fVerticalDegree = (i*(2 * PI) / a_nSubdivisions);//vertical angle of a point on the ring
+		std::vector<vector3> ring;//defined in the for loop, this holds the information of a single ring
 		
-											   //iangle rpresents the angle the point is at compared to the origin in vertical sector
-		float iAngle = PI / 2 - i * (PI / a_nSubdivisions);
-		
-		xy = radius * cosf(iAngle);
-		z = radius * sinf(iAngle);
-		
-		//looping through all the points on a layer
-		for (int j = 0; j < a_nSubdivisions; j++) {//j can be considered the vertical pieces of the sphere
+		//defines the points in each ring and adds them to the rings vector
+		for (int j = 0; j < a_nSubdivisions; j++) {
+			float fHorizontalDegree = (j * (2 * PI) / a_nSubdivisions);//horizontal angle of the point on the ring
+			vector3 point = vector3(cos(fHorizontalDegree)*radius, cosf(fVerticalDegree)*radius, sin(fHorizontalDegree)*radius);
+			ring.push_back(point);//adds point to the ring
 			
-				
-			//jAngle represents the angle to the point in the horizontal sector
-			float jAngle = j * (2 * PI / a_nSubdivisions);
-			
-			x = xy * cosf(jAngle);
-			y = xy * sinf(jAngle);
+		}
+		rings.push_back(ring);
 
-			//creates caps on sphere
-			if (i == 0) {
-				leg1 = vector3(x, y + offset, z);
-				
-				jAngle = (j+1) * (2 * PI / a_nSubdivisions);
+	}
 
-				x = xy * cosf(jAngle);
-				y = xy * sinf(jAngle);
+	for (int i = 0; i < a_nSubdivisions; i++) {
 
-				leg2 = vector3(x, y+offset, z);
+		for (int j = 0; j < a_nSubdivisions; j++) {
+			if (i == 0 || i + 1 == a_nSubdivisions) {//the first subsection has triangles instead of quads
 
-				AddTri(base, leg1, leg2);
-				base = leg1;
+				vector3 bottom = center;
+				bottom.y = 0;
+				if(j+1 < a_nSubdivisions)
+				AddTri(bottom, rings[i][j + 1], rings[i][j]);
 			}
-			//fills body of sphere
-			else {
-				leg1 = vector3(x, y + offset, z);
-
-				jAngle = (j + 1) * (2 * PI / a_nSubdivisions);
-
-				x = xy * cosf(jAngle);
-				y = xy * sinf(jAngle);
-
-				//simulates next level of sphere
-				iAngle = PI / 2 - (i+1) * (PI / a_nSubdivisions);
-
-				xy = radius * cosf(iAngle);
-				z = radius * sinf(iAngle);
-
-				leg2 = vector3(x, y + offset, z);
-
-				jAngle = (j + 2) * (2 * PI / a_nSubdivisions);
-
-				x = xy * cosf(jAngle);
-				y = xy * sinf(jAngle);
-
-				leg3 = vector3(x, y + offset, z);
-
-				AddQuad(base, leg1, leg2, leg3);
-				base = leg1;
+			else if(j+1 < a_nSubdivisions){
+				AddQuad(rings[j][i], rings[j + 1][i], rings[j][i + 1], rings[j + 1][i + 1]);
 			}
 		}
 	}
-
+	
+	
+	
+	
+	
 	
 	// Adding information about color
 	CompleteMesh(a_v3Color);
