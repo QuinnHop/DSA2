@@ -584,6 +584,7 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 			}
 
 			else if(j < a_nSubdivisions){
+				//the quads are part of the body, and therefore are rendered using quads
 				AddQuad(rings[i][j], rings[i + 1][j], rings[i][j + 1], rings[i + 1][j + 1]);
 				
 			}
@@ -591,12 +592,12 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	}
 	for (int j = 0; j < a_nSubdivisions; j++)
 	 {
-		
-		vector3 bottom = center;
-		bottom.y = -a_fRadius;
+		//top of the shape is rendered using tris
+		vector3 top = center;
+		top.y = -a_fRadius;
 
 		if (j < a_nSubdivisions)
-			AddTri(bottom,   rings[a_nSubdivisions - 1][j+1], rings[a_nSubdivisions - 1][j]);
+			AddTri(top,   rings[a_nSubdivisions - 1][j+1], rings[a_nSubdivisions - 1][j]);
 	}
 	
 	
