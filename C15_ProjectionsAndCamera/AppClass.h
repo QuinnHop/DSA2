@@ -16,6 +16,9 @@ namespace Simplex
 
 class Application
 {
+	vector3 v3Position = vector3(0.0f, 0.0f, 5.0f);
+	vector3 v3Target = vector3(0.0f, 0.0f, 0.0f);
+	vector3 v3Upwards = vector3(0.0f, 1.0f, 0.0f);
 	Model* m_pModel = nullptr; //Model to display
 	matrix4 m_mModel; //Model to world matrix for Steve
 	
