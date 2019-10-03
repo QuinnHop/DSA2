@@ -277,8 +277,12 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 
 	//calculate internal degree for each triangle
 	float fDegree = (2 * PI) / a_nSubdivisions;
+
+	//offset is used to make the centerpoint in the middle of the shape
 	float offset = -a_fHeight / 2;
 	vector3 vCenter = vector3(0.0f, offset, 0.0f);
+
+	//save previous third point to use later as second point
 	vector3 vPreviousThirdPoint = vCenter;
 	vector3 vTop = vector3(0.0f, a_fHeight+offset, 0.0f);//the top of the cone
 	for (int i = 0; i < a_nSubdivisions; i++) {
@@ -540,82 +544,65 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Release();
 	Init();
 
+	//The sphere is constructed by forming a cube then normalizing all the points and scaling them by the radius
+
+
 	//variables
-	float offset = -a_fRadius;
-	float xy, x, y, z;
-	float radius = (a_fRadius / (a_nSubdivisions / 2));
-	vector3 base = vector3(0.0f, offset, 0.0f);
-	vector3 leg1;
-	vector3 leg2;
-	vector3 leg3;
-	vector3 leg4;
-	//The sphere is constructed out of a_nSubdivision circles and 2 points, with the radius of each circle being radius = (a_fRadius/(a_nSubdivisions/2))
+	std::vector<std::vector<vector3>> rings;//stores vector of ring vectors, eacho of which holds the coordinates for the points in its ring
+	vector3 center(0.0f, -a_fRadius/2, 0.0f);
 
 
 
-	//looping through all the layers
-	for (int i = 0; i < a_nSubdivisions; i++) {//I can be considered the horizontal pieces of the sphere
+	for (int i = 0; i < a_nSubdivisions; i++) {
+	
 		
-											   //iangle rpresents the angle the point is at compared to the origin in vertical sector
-		float iAngle = PI / 2 - i * (PI / a_nSubdivisions);
-		
-		xy = radius * cosf(iAngle);
-		z = radius * sinf(iAngle);
-		
-		//looping through all the points on a layer
-		for (int j = 0; j < a_nSubdivisions; j++) {//j can be considered the vertical pieces of the sphere
+		float fVerticalDegree = PI / 2 - (i*(PI / a_nSubdivisions));//vertical angle of a point on the ring
+		std::vector<vector3> ring;//defined in the for loop, this holds the information of a single ring
+		float radiusOfRing = a_fRadius * cosf(fVerticalDegree);//actual radius scaled to correct position
+		//defines the points in each ring and adds them to the rings vector
+		for (int j = 0; j < a_nSubdivisions+1; j++) {
+			float fHorizontalDegree = (j * ((2 * PI) / a_nSubdivisions));//horizontal angle of the point on the ring
+			vector3 point = vector3(cos(fHorizontalDegree)*radiusOfRing, a_fRadius*sinf(fVerticalDegree), sin(fHorizontalDegree)*radiusOfRing);
+			ring.push_back(point);//adds point to the ring
 			
-				
-			//jAngle represents the angle to the point in the horizontal sector
-			float jAngle = j * (2 * PI / a_nSubdivisions);
-			
-			x = xy * cosf(jAngle);
-			y = xy * sinf(jAngle);
+		}
+		rings.push_back(ring);
 
-			//creates caps on sphere
-			if (i == 0) {
-				leg1 = vector3(x, y + offset, z);
-				
-				jAngle = (j+1) * (2 * PI / a_nSubdivisions);
+	}
 
-				x = xy * cosf(jAngle);
-				y = xy * sinf(jAngle);
+	//convert points in rings to quads and tris 
+	for (int i = 0; i < a_nSubdivisions-1; i++) {
 
-				leg2 = vector3(x, y+offset, z);
+		for (int j = 0; j < a_nSubdivisions; j++) {
+			if (i == 0) {//the first subsection has triangles instead of quads
 
-				AddTri(base, leg1, leg2);
-				base = leg1;
+				vector3 bottom = center;
+				bottom.y = a_fRadius;
+
+				if(j < a_nSubdivisions)
+				AddTri(bottom, rings[i + 1][j], rings[i + 1][j + 1]);
 			}
-			//fills body of sphere
-			else {
-				leg1 = vector3(x, y + offset, z);
 
-				jAngle = (j + 1) * (2 * PI / a_nSubdivisions);
-
-				x = xy * cosf(jAngle);
-				y = xy * sinf(jAngle);
-
-				//simulates next level of sphere
-				iAngle = PI / 2 - (i+1) * (PI / a_nSubdivisions);
-
-				xy = radius * cosf(iAngle);
-				z = radius * sinf(iAngle);
-
-				leg2 = vector3(x, y + offset, z);
-
-				jAngle = (j + 2) * (2 * PI / a_nSubdivisions);
-
-				x = xy * cosf(jAngle);
-				y = xy * sinf(jAngle);
-
-				leg3 = vector3(x, y + offset, z);
-
-				AddQuad(base, leg1, leg2, leg3);
-				base = leg1;
+			else if(j < a_nSubdivisions){
+				//the quads are part of the body, and therefore are rendered using quads
+				AddQuad(rings[i][j], rings[i + 1][j], rings[i][j + 1], rings[i + 1][j + 1]);
+				
 			}
 		}
 	}
+	for (int j = 0; j < a_nSubdivisions; j++)
+	 {
+		//top of the shape is rendered using tris
+		vector3 top = center;
+		top.y = -a_fRadius;
 
+		if (j < a_nSubdivisions)
+			AddTri(top,   rings[a_nSubdivisions - 1][j+1], rings[a_nSubdivisions - 1][j]);
+	}
+	
+	
+	
+	
 	
 	// Adding information about color
 	CompleteMesh(a_v3Color);
