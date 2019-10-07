@@ -3,7 +3,7 @@ using namespace Simplex;
 void Application::InitVariables(void)
 {
 	//Change this to your name and email
-	m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
+	m_sProgrammer = "Quinn Hopwood - qph6412@g.rit.edu";
 
 	//Set the position and target of the camera
 	//(I'm at [0,0,10], looking at [0,0,0] and up is the positive Y axis)
@@ -46,29 +46,39 @@ void Application::Display(void)
 	m_pMeshMngr->AddSkyboxToRenderList();
 
 	//calculate view and projection
+	vector3 vTemp = m_pCameraMngr->GetPosition();
 	switch (m_uProjection)
 	{
 	default:
-	case 1:
+	case 1://done
 		m_pCamera->ResetCamera();
+		
 		break;
 	case 2:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPerspective(false);//done
 		break;
 	case 3:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(AXIS_X * 20.0f, ZERO_V3, -AXIS_Z);//done
 		break;
 	case 4:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(vector3(0.0f, 0.0f, -15.0f), ZERO_V3, AXIS_Y);//done
+		
 		break;
 	case 5:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(vector3(0.0f, 0.0f, -10.0f), ZERO_V3, AXIS_Y);//doneish?
 		break;
 	case 6:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetNearFar(vector2(0.001f, 10.0f));
+		m_pCamera->SetPositionTargetAndUpward(vector3(0.0f, 0.0f, -15.0f), ZERO_V3, AXIS_Y);//done
 		break;
 	case 7:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetFOV(30);//done
 		break;
 	}
 

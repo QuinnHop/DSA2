@@ -152,11 +152,21 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 
 void MyCamera::MoveForward(float a_fDistance)
 {
-	//The following is just an example and does not take in account the forward vector (AKA view vector)
+	//Multiplies by vector between current position and target to factor in direction
 	m_v3Position += vector3(0.0f, 0.0f,-a_fDistance);
-	m_v3Target += vector3(0.0f, 0.0f, -a_fDistance);
-	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance);
+	m_v3Target += vector3(0.0f, 0.0f, -a_fDistance) ;
+	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance) ;
 }
 
-void MyCamera::MoveVertical(float a_fDistance){}//Needs to be defined
-void MyCamera::MoveSideways(float a_fDistance){}//Needs to be defined
+void MyCamera::MoveVertical(float a_fDistance){
+	//Multiplies by vector between current position and target to factor in direction
+	m_v3Position += vector3(0.0f, -a_fDistance, 0.0f);
+	m_v3Target += vector3(0.0f, -a_fDistance, 0.0f);
+	m_v3Above += vector3(0.0f, -a_fDistance, 0.0f);
+}
+void MyCamera::MoveSideways(float a_fDistance){
+	//Multiplies by vector between current position and target to factor in direction
+	m_v3Position += vector3(-a_fDistance, 0.0f, 0.0f);
+	m_v3Target += vector3(-a_fDistance, 0.0f, 0.0f);
+	m_v3Above += vector3( -a_fDistance, 0.0f, 0.0f);
+}
