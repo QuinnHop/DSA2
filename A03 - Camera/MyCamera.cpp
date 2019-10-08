@@ -100,13 +100,20 @@ Simplex::MyCamera::~MyCamera(void)
 
 void Simplex::MyCamera::ResetCamera(void)
 {
-	m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located
-	m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at
-	m_v3Above = vector3(0.0f, 1.0f, 0.0f); //What is above the camera
+	vector3 m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located (point)
+	vector3 m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at (point)
+	vector3 m_v3Above = vector3(0.0f, 1.0f, 10.0f); //What is above the camera (point)
+	vector3 m_v3Front = glm::normalize(vector3(m_v3Target - m_v3Position)); //The vector between the cam and the target (direction)
+	vector3 m_v3Up = glm::normalize(vector3(m_v3Above - m_v3Position));//upwards direction vector of camera
+	vector3 m_v3Right = glm::normalize(glm::cross(m_v3Front, m_v3Up));//Right direction vector of camera
+
+	quaternion m_qRotation = quaternion(0.0f, 0.0f, 0.0f, 1);//Quaternion containing rotation information
 
 	m_bPerspective = true; //perspective view? False is Orthographic
 
 	m_fFOV = 45.0f; //Field of View
+	m_fPitch = 0.0f;//pitch of the camera
+	m_fYaw = 0.0f;//yaw of the camera
 
 	m_v2Resolution = vector2(1280.0f, 720.0f); //Resolution of the window
 	m_v2NearFar = vector2(0.001f, 1000.0f); //Near and Far planes
@@ -132,7 +139,8 @@ void Simplex::MyCamera::SetPositionTargetAndUpward(vector3 a_v3Position, vector3
 void Simplex::MyCamera::CalculateViewMatrix(void)
 {
 	//Calculate the look at most of your assignment will be reflected in this method
-	m_m4View = glm::lookAt(m_v3Position, m_v3Target, glm::normalize(m_v3Above - m_v3Position)); //position, target, upward
+	m_m4View = glm::lookAt(m_v3Position, m_v3Position+glm::normalize(m_v3Front), glm::normalize(m_v3Up)); //position, target, upward
+	m_m4View = m_m4View * glm::toMat4(m_qRotation);
 }
 
 void Simplex::MyCamera::CalculateProjectionMatrix(void)
@@ -153,20 +161,59 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 void MyCamera::MoveForward(float a_fDistance)
 {
 	//Multiplies by vector between current position and target to factor in direction
-	m_v3Position += vector3(0.0f, 0.0f,-a_fDistance);
-	m_v3Target += vector3(0.0f, 0.0f, -a_fDistance) ;
-	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance) ;
+	m_v3Position += a_fDistance*m_v3Front;
+	m_v3Target += a_fDistance * m_v3Front;
+	m_v3Above += a_fDistance * m_v3Front;
 }
 
 void MyCamera::MoveVertical(float a_fDistance){
+	
 	//Multiplies by vector between current position and target to factor in direction
-	m_v3Position += vector3(0.0f, -a_fDistance, 0.0f);
-	m_v3Target += vector3(0.0f, -a_fDistance, 0.0f);
-	m_v3Above += vector3(0.0f, -a_fDistance, 0.0f);
+	m_v3Position += a_fDistance*m_v3Up;
+	m_v3Target += a_fDistance * m_v3Up;
+	m_v3Above += a_fDistance * m_v3Up;
 }
 void MyCamera::MoveSideways(float a_fDistance){
+	
 	//Multiplies by vector between current position and target to factor in direction
-	m_v3Position += vector3(-a_fDistance, 0.0f, 0.0f);
-	m_v3Target += vector3(-a_fDistance, 0.0f, 0.0f);
-	m_v3Above += vector3( -a_fDistance, 0.0f, 0.0f);
+	m_v3Position += a_fDistance * m_v3Right;
+	m_v3Target += a_fDistance * m_v3Right;
+	m_v3Above += a_fDistance * m_v3Right;
+}
+//takes in angles generated from mouse displacement and modifies the rotation vector and quaternion
+void MyCamera::RotateCamera(float a_fAngleX, float a_fAngleY) {
+	
+	float fSens = 1.0f;// scales the sensitivity of the mouse down
+	a_fAngleX *= fSens;
+	a_fAngleY *= fSens;
+
+	m_fYaw += a_fAngleX;
+	m_fPitch += a_fAngleY;
+	
+	vector3 v3Rotation = vector3(glm::radians(m_fYaw), glm::radians(m_fPitch), 0);
+	m_qRotation = glm::quat(v3Rotation);//creates a quaternion from rotation vector
+	
+	//calculate front vector
+	m_v3Front.x = cos(glm::radians(m_fYaw)) * cos(glm::radians(m_fPitch));
+	m_v3Front.y = sin(glm::radians(m_fPitch));
+	m_v3Front.z = sin(glm::radians(m_fYaw))*cos(glm::radians(m_fPitch));
+
+	//normalize front vector
+	m_v3Front = glm::normalize(m_v3Front);
+
+	m_v3Target = m_v3Position + m_v3Front;
+
+	//calculate right vector 
+	m_v3Right = glm::cross(m_v3Front, m_v3Up);
+
+	//normalize right vector
+	m_v3Right = glm::normalize(m_v3Right);
+	
+
+	//calculate up vector
+	m_v3Up = glm::cross(m_v3Front, m_v3Right);
+	//normalize up vector
+	m_v3Up = glm::normalize(m_v3Up);
+
+	m_v3Above = m_v3Position + m_v3Up;
 }

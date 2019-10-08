@@ -12,13 +12,20 @@ namespace Simplex
 
 class MyCamera
 {
-	vector3 m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located
-	vector3 m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at
-	vector3 m_v3Above = vector3(0.0f, 1.0f, 0.0f); //What is above the camera
+	vector3 m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located (point)
+	vector3 m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at (point)
+	vector3 m_v3Above = vector3(0.0f, 1.0f, 10.0f); //What is above the camera (point)
+	vector3 m_v3Front = glm::normalize(vector3(m_v3Target - m_v3Position)); //The vector between the cam and the target (direction)
+	vector3 m_v3Up = glm::normalize(vector3(m_v3Above - m_v3Position));//upwards direction vector of camera
+	vector3 m_v3Right = glm::normalize(glm::cross(m_v3Front, m_v3Up));//Right direction vector of camera
+	
+	quaternion m_qRotation = quaternion(0.0f, 0.0f, 0.0f, 1);//Quaternion containing rotation information
 
 	bool m_bPerspective = true; //perspective view? False is Orthographic
 
 	float m_fFOV = 45.0f; //Field of View
+	float m_fPitch = 0.0f;//pitch of the camera
+	float m_fYaw = 0.0f;//yaw of the camera
 
 	vector2 m_v2Resolution = vector2(1280.0f, 720.0f); //Resolution of the window
 	vector2 m_v2NearFar = vector2(0.001f, 1000.0f); //Near and Far planes
@@ -230,6 +237,8 @@ public:
 	OUTPUT: ---
 	*/
 	void MoveSideways(float a_fDistance = 0.1f);
+
+	void RotateCamera(float a_fAngle, float a_fAngleY);
 };
 
 } //namespace Simplex
