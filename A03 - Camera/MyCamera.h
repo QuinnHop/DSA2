@@ -1,5 +1,5 @@
 /*----------------------------------------------
-Programmer: Alberto Bobadilla (labigm@gmail.com)
+Programmer: Quinn Hopwood qph6412@g.rit.edu
 Date: 2018/09
 ----------------------------------------------*/
 #ifndef __MYCAMERACLASS_H_
@@ -14,12 +14,12 @@ class MyCamera
 {
 	vector3 m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located (point)
 	vector3 m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at (point)
-	vector3 m_v3Above = vector3(0.0f, 1.0f, 10.0f); //What is above the camera (point)
+	vector3 m_v3Above = vector3(0.0f, 1.0f, 0.0f); //What is above the camera (point)
 	vector3 m_v3Front = glm::normalize(vector3(m_v3Target - m_v3Position)); //The vector between the cam and the target (direction)
-	vector3 m_v3Up = glm::normalize(vector3(m_v3Above - m_v3Position));//upwards direction vector of camera
+	vector3 m_v3Up = glm::normalize(vector3(m_v3Above));//upwards direction vector of camera
 	vector3 m_v3Right = glm::normalize(glm::cross(m_v3Front, m_v3Up));//Right direction vector of camera
 	
-	quaternion m_qRotation = quaternion(0.0f, 0.0f, 0.0f, 1);//Quaternion containing rotation information
+	quaternion m_qRotation = quaternion(0.0f, 0.0f, 0.0f, 1);//Quaternion containing rtotal rotation information (Yaw and Pitch)
 
 	bool m_bPerspective = true; //perspective view? False is Orthographic
 
@@ -238,6 +238,11 @@ public:
 	*/
 	void MoveSideways(float a_fDistance = 0.1f);
 
+	/*
+	USAGE: Creates rotation matricies and sets the front and right vectors accordingly
+	ARGUMENTs: float a_AngleX, float a_AngleY
+	OUTPUT: ---
+	*/
 	void RotateCamera(float a_fAngle, float a_fAngleY);
 };
 

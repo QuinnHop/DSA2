@@ -139,8 +139,8 @@ void Simplex::MyCamera::SetPositionTargetAndUpward(vector3 a_v3Position, vector3
 void Simplex::MyCamera::CalculateViewMatrix(void)
 {
 	//Calculate the look at most of your assignment will be reflected in this method
-	m_m4View = glm::lookAt(m_v3Position, m_v3Position+glm::normalize(m_v3Front), glm::normalize(m_v3Up)); //position, target, upward
-	m_m4View = m_m4View * glm::toMat4(m_qRotation);
+	m_m4View = glm::lookAt(m_v3Position, m_v3Target, m_v3Up); //position, target, upward
+	
 }
 
 void Simplex::MyCamera::CalculateProjectionMatrix(void)
@@ -160,7 +160,7 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 
 void MyCamera::MoveForward(float a_fDistance)
 {
-	//Multiplies by vector between current position and target to factor in direction
+	//Multiplies the distance by the normalized front vector and adds it to the position
 	m_v3Position += a_fDistance*m_v3Front;
 	m_v3Target += a_fDistance * m_v3Front;
 	m_v3Above += a_fDistance * m_v3Front;
@@ -168,52 +168,51 @@ void MyCamera::MoveForward(float a_fDistance)
 
 void MyCamera::MoveVertical(float a_fDistance){
 	
-	//Multiplies by vector between current position and target to factor in direction
+	//Multiplies the distance by the normalized up vector and adds it to the position
 	m_v3Position += a_fDistance*m_v3Up;
 	m_v3Target += a_fDistance * m_v3Up;
 	m_v3Above += a_fDistance * m_v3Up;
 }
 void MyCamera::MoveSideways(float a_fDistance){
 	
-	//Multiplies by vector between current position and target to factor in direction
-	m_v3Position += a_fDistance * m_v3Right;
-	m_v3Target += a_fDistance * m_v3Right;
-	m_v3Above += a_fDistance * m_v3Right;
+	//Multiplies the distance by the normalized right vector and adds it to the position
+	m_v3Position -= a_fDistance * m_v3Right;
+	m_v3Target -= a_fDistance * m_v3Right;
+	m_v3Above -= a_fDistance * m_v3Right;
 }
 //takes in angles generated from mouse displacement and modifies the rotation vector and quaternion
 void MyCamera::RotateCamera(float a_fAngleX, float a_fAngleY) {
 	
-	float fSens = 1.0f;// scales the sensitivity of the mouse down
+	float fSens = 5.0f;// scales the sensitivity of the mouse down
 	a_fAngleX *= fSens;
 	a_fAngleY *= fSens;
 
-	m_fYaw += a_fAngleX;
-	m_fPitch += a_fAngleY;
+	//set pitch and yaw to corresponding angle
+	m_fYaw = a_fAngleY;
+	m_fPitch = a_fAngleX;
 	
-	vector3 v3Rotation = vector3(glm::radians(m_fYaw), glm::radians(m_fPitch), 0);
-	m_qRotation = glm::quat(v3Rotation);//creates a quaternion from rotation vector
+	//creates x and y rotation quaternions 
+	quaternion qPitch = glm::angleAxis(glm::radians(m_fPitch), m_v3Right);
+	quaternion qYaw = glm::angleAxis(glm::radians(m_fYaw), vector3(0.0f, 1.0f, 0.0f));
+
+	m_qRotation = qPitch*qYaw;//creates a quaternion from the two rotation quaternions
 	
-	//calculate front vector
-	m_v3Front.x = cos(glm::radians(m_fYaw)) * cos(glm::radians(m_fPitch));
-	m_v3Front.y = sin(glm::radians(m_fPitch));
-	m_v3Front.z = sin(glm::radians(m_fYaw))*cos(glm::radians(m_fPitch));
+	m_qRotation = glm::normalize(m_qRotation);
+
+	//applies the rotation matrix to the front vector
+	m_v3Front = glm::rotate(m_qRotation, m_v3Front);
 
 	//normalize front vector
 	m_v3Front = glm::normalize(m_v3Front);
 
+	//set target according to new front vector
 	m_v3Target = m_v3Position + m_v3Front;
 
 	//calculate right vector 
-	m_v3Right = glm::cross(m_v3Front, m_v3Up);
-
+	
+	m_v3Right = glm::rotate(qYaw, m_v3Right);
+	
 	//normalize right vector
 	m_v3Right = glm::normalize(m_v3Right);
 	
-
-	//calculate up vector
-	m_v3Up = glm::cross(m_v3Front, m_v3Right);
-	//normalize up vector
-	m_v3Up = glm::normalize(m_v3Up);
-
-	m_v3Above = m_v3Position + m_v3Up;
 }
