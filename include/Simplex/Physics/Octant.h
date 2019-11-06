@@ -224,6 +224,10 @@ private:
 
 #endif //__OCTANTCLASS_H_
 
+class Octant
+{
+};
+
   /*
   USAGE:
   ARGUMENTS: ---

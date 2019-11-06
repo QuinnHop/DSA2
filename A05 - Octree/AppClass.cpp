@@ -30,6 +30,7 @@ void Application::InitVariables(void)
 		}
 	}
 	m_uOctantLevels = 1;
+	//TODO: call ocatant code here
 	m_pEntityMngr->Update();
 }
 void Application::Update(void)

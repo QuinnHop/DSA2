@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/Quinn/source/repos/DSA2/include/glm
+# Install script for directory: D:/Profiles/qph6412/source/repos/QuinnHop/DSA2/include/glm
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Users/Quinn/Source/Repos/DSA2/include/glm/out/install/x64-Debug")
+  set(CMAKE_INSTALL_PREFIX "d:/profiles/qph6412/source/repos/quinnhop/dsa2/include/glm/out/install/x64-Debug")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/Users/Quinn/source/repos/DSA2/include/glm/out/build/x64-Debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "D:/Profiles/qph6412/source/repos/QuinnHop/DSA2/include/glm/out/build/x64-Debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
