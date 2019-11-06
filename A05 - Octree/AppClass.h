@@ -1,6 +1,6 @@
 /*----------------------------------------------
-Programmer: QUinn Hopwood
-Date: 2019/11
+Programmer: Alberto Bobadilla (labigm@gmail.com)
+Date: 2017/06
 ----------------------------------------------*/
 #ifndef __APPLICATIONCLASS_H_
 #define __APPLICATIONCLASS_H_
@@ -11,7 +11,6 @@ Date: 2019/11
 #include "imgui\ImGuiObject.h"
 
 #include "MyEntityManager.h"
-#include "Oc
 
 namespace Simplex
 {

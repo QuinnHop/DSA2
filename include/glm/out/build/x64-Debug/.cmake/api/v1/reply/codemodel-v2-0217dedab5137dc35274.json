@@ -34,7 +34,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "glm_dummy::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-glm_dummy-Debug-6f0755633f77d414d22b.json",
+					"jsonFile" : "target-glm_dummy-Debug-eb271afe1d4c4792972b.json",
 					"name" : "glm_dummy",
 					"projectIndex" : 0
 				}
@@ -44,8 +44,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "D:/Profiles/qph6412/source/repos/QuinnHop/DSA2/include/glm/out/build/x64-Debug",
-		"source" : "D:/Profiles/qph6412/source/repos/QuinnHop/DSA2/include/glm"
+		"build" : "C:/Users/Quinn/source/repos/DSA2/include/glm/out/build/x64-Debug",
+		"source" : "C:/Users/Quinn/source/repos/DSA2/include/glm"
 	},
 	"version" : 
 	{
