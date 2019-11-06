@@ -19,6 +19,10 @@ void Application::DrawGUI(void)
 	//m_pMeshMngr->Print("						");
 	m_pMeshMngr->Print("FPS:");
 	m_pMeshMngr->PrintLine(std::to_string(m_pSystem->GetFPS()), C_RED);
+	
+	//m_pMeshMngr->Print("						");
+	m_pMeshMngr->Print("Octree Visibile:");
+	m_pMeshMngr->PrintLine(std::to_string(m_bOctreeVisible), C_RED);
 #pragma endregion
 
 	//Calculate the window size to know how to draw
@@ -37,13 +41,14 @@ void Application::DrawGUI(void)
 			ImGui::Text("Programmer: \n");
 			ImGui::TextColored(v4Color, m_sProgrammer.c_str());
 			ImGui::Text("FrameRate: %.2f [FPS] -> %.3f [ms/frame]\n",
-				ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+			ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
 			ImGui::Text("Levels in Octree: %d\n", m_uOctantLevels);
-			//ImGui::Text("Octants: %d\n", m_pRoot->GetOctantCount());
+			ImGui::Text("Octants: %d\n", m_pRoot->GetOctantCount());
 			ImGui::Text("Objects: %d\n", m_uObjects);
 			ImGui::Separator();
 			ImGui::Text("Control:\n");
 			ImGui::Text("   WASD: Movement\n");
+			ImGui::Text("   Toggle Octree Visibility: G");
 			ImGui::Text("	 F1: Perspective\n");
 			ImGui::Text("	 F2: Orthographic X\n");
 			ImGui::Text("	 F3: Orthographic Y\n");

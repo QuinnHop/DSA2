@@ -24,8 +24,9 @@ namespace Simplex
 
 		float m_fSize = 0.0f; //Size of the octant
 
-		MeshManager* m_pMeshMngr = nullptr;//Mesh Manager singleton
+		
 		MyEntityManager* m_pEntityMngr = nullptr; //Entity Manager Singleton
+		MeshManager* m_pMeshMngr = nullptr;//Mesh Manager singleton
 
 		vector3 m_v3Center = vector3(0.0f); //Will store the center point of the octant
 		vector3 m_v3Min = vector3(0.0f); //Will store the minimum vector of the octant
@@ -48,7 +49,7 @@ namespace Simplex
 		- uint nIdealEntityCount = 5 -> Sets the ideal level of objects per octant
 		OUTPUT: class object
 		*/
-		MyOctree(uint a_nMaxLevel = 2, uint a_nIdealEntityCount = 5);
+		MyOctree(uint a_nMaxLevel = 1, uint a_nIdealEntityCount = 5);
 		/*
 		USAGE: Constructor
 		ARGUMENTS:
@@ -231,4 +232,3 @@ namespace Simplex
   OUTPUT: ---
   */
 
-class MyOctree {};

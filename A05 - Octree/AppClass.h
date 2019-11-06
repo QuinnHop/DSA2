@@ -35,7 +35,7 @@ private:
 	uint m_uControllerCount = 0; //count of controllers connected
 
 	bool m_bFocused = true; //is the window focused?
-
+	bool m_bOctreeVisible = true; //whether the octree is displayed or not
 	float m_fMovementSpeed = 0.1f; //how fast the camera will move
 
 	vector3 m_v3Mouse = vector3(); //position of the mouse in the window
@@ -52,7 +52,7 @@ private:
 	LightManager* m_pLightMngr = nullptr; //Light Manager of the system
 	MeshManager* m_pMeshMngr = nullptr; //Mesh Manager
 	CameraManager* m_pCameraMngr = nullptr; //Singleton for the camera manager
-	MyOctree* m_pRoot = new MyOctree(4, 5);//pointer to the root of the octree
+	MyOctree* m_pRoot = nullptr;//pointer to the root of the octree
 
 	ControllerInput* m_pController[8]; //Controller
 	uint m_uActCont = 0; //Active Controller of the Application

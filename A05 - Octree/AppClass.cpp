@@ -29,6 +29,8 @@ void Application::InitVariables(void)
 			m_pEntityMngr->SetModelMatrix(m4Position);
 		}
 	}
+	m_pRoot = new MyOctree();
+
 	m_uOctantLevels = 1;
 	m_pEntityMngr->Update();
 }
@@ -47,7 +49,18 @@ void Application::Update(void)
 	m_pEntityMngr->Update();
 
 	//Add objects to render list
-	m_pEntityMngr->AddEntityToRenderList(-1, true);
+	if (m_uOctantID == -1) {
+		m_pEntityMngr->AddEntityToRenderList(-1, true);
+
+	}//adds the objects to their corresponding octree dimension
+	else {
+		for (uint i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
+			if (m_pEntityMngr->IsInDimension(i, m_uOctantID)) {
+				m_pEntityMngr->AddEntityToRenderList(i, true);
+			}
+		}
+	}
+	
 }
 void Application::Display(void)
 {
@@ -55,7 +68,8 @@ void Application::Display(void)
 	ClearScreen();
 
 	//display octree
-	//m_pRoot->Display();
+	if(m_bOctreeVisible)
+	m_pRoot->Display();
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
