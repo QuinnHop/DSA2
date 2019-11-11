@@ -111,6 +111,14 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 		bFPSControl = !bFPSControl;
 		m_pCameraMngr->SetFPS(bFPSControl);
 		break;
+	case sf::Keyboard::G:
+		if (m_bOctreeVisible) {
+			m_bOctreeVisible = false;
+		}
+		else {
+			m_bOctreeVisible = true;
+		}
+		break;
 	case sf::Keyboard::PageUp:
 		++m_uOctantID;
 		

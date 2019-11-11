@@ -8,34 +8,7 @@ uint MyOctree::m_uIdealEntityCount = 5;// ideal number of objects in a given sub
 uint MyOctree::m_uOctantCount = 0; //starting number of subdivisions
 uint MyOctree::m_uMaxLevel = 4; //Max number of subdivisions
 
-//sets initial values of MyOctree
-void MyOctree::Init(void)
-{
-	m_uChildren = 0; //no children
-	m_fSize = 0.0f; //initial size  = 0
-
-	m_uID = m_uOctantCount; //the id of the first octant is 0
-	m_uLevel = 0; //no subdivisions, so level is 0
-
-	//no max.min/center values have been added
-	m_v3Center = vector3(0.0f);
-	m_v3Max = vector3(0.0f);
-	m_v3Min = vector3(0.0f);
-
-	//get instance to manager singletons
-	m_pEntityMngr = MyEntityManager::GetInstance();
-	m_pMeshMngr = MeshManager::GetInstance();
-
-	//we haven't set the parent/root yet
-	m_pRoot = nullptr;
-	m_pParent = nullptr;
-
-	//parent node has 8 subdivisions, create the children
-	for (uint i = 0; i < 8; i++) {
-		m_pChild[i] = nullptr;
-	}
-
-}
+//constructor
 MyOctree::MyOctree(uint a_nMaxLevel, uint a_nIdealEntityCount)
 {
 	Init();
@@ -75,16 +48,17 @@ MyOctree::MyOctree(uint a_nMaxLevel, uint a_nIdealEntityCount)
 	locMinMax.clear();
 	SafeDelete(pRigidBody);
 
+	//determine size for top level octant
 	m_fSize = 2.0f* fMax;
 	m_v3Center = v3Center;
-	m_v3Max = m_v3Center - vector3(fMax);
-	m_v3Min = m_v3Center + vector3(fMax);
+	m_v3Max = m_v3Center + vector3(fMax);
+	m_v3Min = m_v3Center - vector3(fMax);
 
 	m_uOctantCount++;
 
 	ConstructTree(m_uMaxLevel);
 }
-
+//contructor
 MyOctree::MyOctree(vector3 a_v3Center, float a_fSize)
 {
 	Init();
@@ -96,7 +70,7 @@ MyOctree::MyOctree(vector3 a_v3Center, float a_fSize)
 
 	m_uOctantCount++;
 }
-
+//copy constructor
 MyOctree::MyOctree(MyOctree const& other)
 {
 	
@@ -120,7 +94,7 @@ MyOctree::MyOctree(MyOctree const& other)
 		m_pChild[i] = other.m_pChild[i];
 	}
 }
-
+//assignement override contstructor
 MyOctree& MyOctree::operator=(MyOctree const& other)
 {
 	//if the object is not the current Octree
@@ -132,12 +106,12 @@ MyOctree& MyOctree::operator=(MyOctree const& other)
 	}
 	return *this;
 }
-
+//destructor
 MyOctree::~MyOctree(void)
 {
 	Release();
 }
-
+//swaps octree with passed in octree
 void MyOctree::Swap(MyOctree& other)
 {
 	//copy over MyOctree info from other into new
@@ -163,27 +137,27 @@ void MyOctree::Swap(MyOctree& other)
 	m_pMeshMngr = MeshManager::GetInstance();
 	m_pEntityMngr = MyEntityManager::GetInstance();
 }
-
+//gets size
 float MyOctree::GetSize(void)
 {
 	return m_fSize;
 }
-
+//gets centerpoint
 vector3 MyOctree::GetCenterGlobal(void)
 {
 	return m_v3Center;
 }
-
+//gets min of octant in global space
 vector3 MyOctree::GetMinGlobal(void)
 {
 	return m_v3Min;
 }
-
+//gets max of octant in global space
 vector3 MyOctree::GetMaxGlobal(void)
 {
 	return m_v3Max;
 }
-
+//returns true if the object with the given index is in the current octant
 bool MyOctree::IsColliding(uint a_uRBIndex)
 {
 	uint numObjs = m_pEntityMngr->GetEntityCount();
@@ -193,37 +167,40 @@ bool MyOctree::IsColliding(uint a_uRBIndex)
 
 	MyEntity* pEntity = m_pEntityMngr->GetEntity(a_uRBIndex);
 	MyRigidBody* pRigidBody = pEntity->GetRigidBody();
-	vector3 v3EntityMin = pRigidBody -> GetMinGlobal();
-	vector3 v3EntityMax = pRigidBody -> GetMaxGlobal();
+	vector3 v3EntityMin = pRigidBody->GetMinGlobal();
+	vector3 v3EntityMax = pRigidBody->GetMaxGlobal();
 
 	//check for x collisions
-	if (m_v3Min.x > v3EntityMin.x) {
+	if (m_v3Max.x < v3EntityMin.x) {
 		return false;
 	}
-	if (m_v3Max.x < v3EntityMax.x) {
+	if (m_v3Min.x > v3EntityMax.x) {
 		return false;
 	}
+	
 
 	//check for y collisions
-	if (m_v3Min.y > v3EntityMin.y) {
+	if (m_v3Max.y < v3EntityMin.y) {
 		return false;
 	}
-	if (m_v3Max.y < v3EntityMax.y) {
+	if (m_v3Min.y > v3EntityMax.y) {
 		return false;
 	}
+	
 
 	//check for z collisions
-	if (m_v3Min.z > v3EntityMin.z) {
+	
+	if (m_v3Max.z < v3EntityMin.z) {
 		return false;
 	}
-	if (m_v3Max.z < v3EntityMax.z) {
+	if (m_v3Min.z > v3EntityMax.z) {
 		return false;
 	}
 
 	//all negative checks failed, so there is a collision
 	return true;
 }
-
+//displays the octant bounds
 void MyOctree::Display(uint a_nIndex, vector3 a_v3Color)
 {
 	if (m_uID == a_nIndex) {
@@ -234,7 +211,7 @@ void MyOctree::Display(uint a_nIndex, vector3 a_v3Color)
 		m_pChild[i]->Display(a_nIndex);
 	}
 }
-
+//displays the octant bounds
 void MyOctree::Display(vector3 a_v3Color)
 {
 	for (uint i = 0; i < m_uChildren; i++) {
@@ -242,7 +219,7 @@ void MyOctree::Display(vector3 a_v3Color)
 	}
 	m_pMeshMngr->AddWireCubeToRenderList(glm::translate(IDENTITY_M4, m_v3Center) * glm::scale(vector3(m_fSize)), a_v3Color, RENDER_WIRE);
 }
-
+//displays octant leaves
 void MyOctree::DisplayLeafs(vector3 a_v3Color)
 {
 	//loops through each child in lChild and renders it
@@ -260,8 +237,9 @@ void MyOctree::ClearEntityList(void)
 	for (uint i = 0; i < m_uChildren; i++) {
 		m_pChild[i]->ClearEntityList();
 	}
+	m_EntityList.clear();
 }
-
+//function which subdivides the octants based on how many entities are containted within it
 void MyOctree::Subdivide(void)
 {
 	if (m_uLevel >= m_uMaxLevel) {
@@ -323,7 +301,7 @@ void MyOctree::Subdivide(void)
 		}
 	}
 }
-
+//gets the children of the octant
 MyOctree* MyOctree::GetChild(uint a_nChild)
 {
 	if (a_nChild > 7) {
@@ -331,18 +309,18 @@ MyOctree* MyOctree::GetChild(uint a_nChild)
 	}
 	return m_pChild[a_nChild];
 }
-
+//gets the parent of the octant
 MyOctree* MyOctree::GetParent(void)
 {
 	return m_pParent;
 }
-
+//determines if octant is a leaf
 bool MyOctree::IsLeaf(void)
 {
 	if (m_uChildren == 0) return true;
 	else return false;
 }
-
+//returns true if the current octain contains more than the current perfered number of entities
 bool MyOctree::ContainsMoreThan(uint a_nEntities)
 {
 	uint currCount = 0;//count of objects in current octant
@@ -355,7 +333,7 @@ bool MyOctree::ContainsMoreThan(uint a_nEntities)
 	}
 	return false;
 }
-
+//deletes all children
 void MyOctree::KillBranches(void)
 {
 	//recursivley loops through the children up the tree as each set of children is set to nullptr
@@ -366,7 +344,7 @@ void MyOctree::KillBranches(void)
 	}
 	m_uChildren = 0;
 }
-
+//contructs the tree for the octree
 void MyOctree::ConstructTree(uint a_nMaxLevel)
 {
 	if (m_uLevel != 0)
@@ -390,11 +368,11 @@ void MyOctree::ConstructTree(uint a_nMaxLevel)
 	AssignIDtoEntity();
 	ConstructList();
 }
-
+//assigns an id to each entity based on the current octant it's in
 void MyOctree::AssignIDtoEntity(void)
 {
-	for (uint uChild = 0; uChild < m_uChildren; uChild++) {
-		m_pChild[uChild]->AssignIDtoEntity();
+	for (uint i = 0; i < m_uChildren; i++) {
+		m_pChild[i]->AssignIDtoEntity();
 	}
 	//if you reach a leaf
 	if (m_uChildren == 0) {
@@ -407,12 +385,12 @@ void MyOctree::AssignIDtoEntity(void)
 		}
 	}
 }
-
+//gets the number of octants
 uint MyOctree::GetOctantCount(void)
 {
 	return m_uOctantCount;
 }
-
+//removes all data from the octree
 void MyOctree::Release(void)
 {
 	//root release
@@ -425,8 +403,34 @@ void MyOctree::Release(void)
 	m_lChild.clear();
 }
 
+//sets initial values of MyOctree
+void MyOctree::Init(void)
+{
+	m_uChildren = 0; //no children
+	m_fSize = 0.0f; //initial size  = 0
 
+	m_uID = m_uOctantCount; //the id of the first octant is 0
+	m_uLevel = 0; //no subdivisions, so level is 0
 
+	//no max.min/center values have been added
+	m_v3Center = vector3(0.0f);
+	m_v3Max = vector3(0.0f);
+	m_v3Min = vector3(0.0f);
+
+	m_pEntityMngr = MyEntityManager::GetInstance();
+	m_pMeshMngr = MeshManager::GetInstance();
+	
+
+	m_pRoot = nullptr;
+	m_pParent = nullptr;
+
+	//parent node has 8 subdivisions, create the children
+	for (uint i = 0; i < 8; i++) {
+		m_pChild[i] = nullptr;
+	}
+
+}
+//adds children to each of the non-leaf octants
 void MyOctree::ConstructList(void)
 {
 	for (uint i = 0; i < m_uChildren; i++) {
