@@ -22,6 +22,7 @@ class Application
 	uint m_uOctantID = -1; //Index of Octant to display
 	uint m_uObjects = 0; //Number of objects in the scene
 	uint m_uOctantLevels = 0; //Number of levels in the octree
+	MyOctree* m_pRoot = new MyOctree();//pointer to the root of the octree
 private:
 	String m_sProgrammer = "Quinn Hopwood - qph6412@rit.edu"; //programmer
 
@@ -52,7 +53,7 @@ private:
 	LightManager* m_pLightMngr = nullptr; //Light Manager of the system
 	MeshManager* m_pMeshMngr = nullptr; //Mesh Manager
 	CameraManager* m_pCameraMngr = nullptr; //Singleton for the camera manager
-	MyOctree* m_pRoot = new MyOctree(4, 5);//pointer to the root of the octree
+	
 
 	ControllerInput* m_pController[8]; //Controller
 	uint m_uActCont = 0; //Active Controller of the Application

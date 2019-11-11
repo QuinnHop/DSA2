@@ -231,4 +231,3 @@ namespace Simplex
   OUTPUT: ---
   */
 
-class MyOctree {};

@@ -4,12 +4,39 @@ using namespace Simplex;
 
 //set some variables for my MyOctree class
 
-uint Simplex::MyOctree::m_uIdealEntityCount = 5;// ideal number of objects in a given subdivision
-uint Simplex::MyOctree::m_uOctantCount = 0; //starting number of subdivisions
-uint Simplex::MyOctree::m_uMaxLevel = 4; //Max number of subdivisions
+uint MyOctree::m_uIdealEntityCount = 5;// ideal number of objects in a given subdivision
+uint MyOctree::m_uOctantCount = 0; //starting number of subdivisions
+uint MyOctree::m_uMaxLevel = 4; //Max number of subdivisions
 
+//sets initial values of MyOctree
+void MyOctree::Init(void)
+{
+	m_uChildren = 0; //no children
+	m_fSize = 0.0f; //initial size  = 0
 
-Simplex::MyOctree::MyOctree(uint a_nMaxLevel, uint a_nIdealEntityCount)
+	m_uID = m_uOctantCount; //the id of the first octant is 0
+	m_uLevel = 0; //no subdivisions, so level is 0
+
+	//no max.min/center values have been added
+	m_v3Center = vector3(0.0f);
+	m_v3Max = vector3(0.0f);
+	m_v3Min = vector3(0.0f);
+
+	//get instance to manager singletons
+	m_pEntityMngr = MyEntityManager::GetInstance();
+	m_pMeshMngr = MeshManager::GetInstance();
+
+	//we haven't set the parent/root yet
+	m_pRoot = nullptr;
+	m_pParent = nullptr;
+
+	//parent node has 8 subdivisions, create the children
+	for (uint i = 0; i < 8; i++) {
+		m_pChild[i] = nullptr;
+	}
+
+}
+MyOctree::MyOctree(uint a_nMaxLevel, uint a_nIdealEntityCount)
 {
 	Init();
 
@@ -58,7 +85,7 @@ Simplex::MyOctree::MyOctree(uint a_nMaxLevel, uint a_nIdealEntityCount)
 	ConstructTree(m_uMaxLevel);
 }
 
-Simplex::MyOctree::MyOctree(vector3 a_v3Center, float a_fSize)
+MyOctree::MyOctree(vector3 a_v3Center, float a_fSize)
 {
 	Init();
 	m_v3Center = a_v3Center;
@@ -70,7 +97,7 @@ Simplex::MyOctree::MyOctree(vector3 a_v3Center, float a_fSize)
 	m_uOctantCount++;
 }
 
-Simplex::MyOctree::MyOctree(MyOctree const& other)
+MyOctree::MyOctree(MyOctree const& other)
 {
 	
 	m_v3Center = other.m_v3Center;
@@ -94,7 +121,7 @@ Simplex::MyOctree::MyOctree(MyOctree const& other)
 	}
 }
 
-Simplex::MyOctree& Simplex::MyOctree::operator=(MyOctree const& other)
+MyOctree& MyOctree::operator=(MyOctree const& other)
 {
 	//if the object is not the current Octree
 	if (this != &other) {
@@ -106,12 +133,12 @@ Simplex::MyOctree& Simplex::MyOctree::operator=(MyOctree const& other)
 	return *this;
 }
 
-Simplex::MyOctree::~MyOctree(void)
+MyOctree::~MyOctree(void)
 {
 	Release();
 }
 
-void Simplex::MyOctree::Swap(MyOctree& other)
+void MyOctree::Swap(MyOctree& other)
 {
 	//copy over MyOctree info from other into new
 	std::swap(m_lChild, other.m_lChild);
@@ -137,27 +164,27 @@ void Simplex::MyOctree::Swap(MyOctree& other)
 	m_pEntityMngr = MyEntityManager::GetInstance();
 }
 
-float Simplex::MyOctree::GetSize(void)
+float MyOctree::GetSize(void)
 {
 	return m_fSize;
 }
 
-vector3 Simplex::MyOctree::GetCenterGlobal(void)
+vector3 MyOctree::GetCenterGlobal(void)
 {
 	return m_v3Center;
 }
 
-vector3 Simplex::MyOctree::GetMinGlobal(void)
+vector3 MyOctree::GetMinGlobal(void)
 {
 	return m_v3Min;
 }
 
-vector3 Simplex::MyOctree::GetMaxGlobal(void)
+vector3 MyOctree::GetMaxGlobal(void)
 {
 	return m_v3Max;
 }
 
-bool Simplex::MyOctree::IsColliding(uint a_uRBIndex)
+bool MyOctree::IsColliding(uint a_uRBIndex)
 {
 	uint numObjs = m_pEntityMngr->GetEntityCount();
 
@@ -197,7 +224,7 @@ bool Simplex::MyOctree::IsColliding(uint a_uRBIndex)
 	return true;
 }
 
-void Simplex::MyOctree::Display(uint a_nIndex, vector3 a_v3Color)
+void MyOctree::Display(uint a_nIndex, vector3 a_v3Color)
 {
 	if (m_uID == a_nIndex) {
 		m_pMeshMngr->AddWireCubeToRenderList(glm::translate(IDENTITY_M4, m_v3Center)* glm::scale(vector3(m_fSize)), a_v3Color, RENDER_WIRE);
@@ -208,7 +235,7 @@ void Simplex::MyOctree::Display(uint a_nIndex, vector3 a_v3Color)
 	}
 }
 
-void Simplex::MyOctree::Display(vector3 a_v3Color)
+void MyOctree::Display(vector3 a_v3Color)
 {
 	for (uint i = 0; i < m_uChildren; i++) {
 		m_pChild[i]->Display(a_v3Color);
@@ -216,7 +243,7 @@ void Simplex::MyOctree::Display(vector3 a_v3Color)
 	m_pMeshMngr->AddWireCubeToRenderList(glm::translate(IDENTITY_M4, m_v3Center) * glm::scale(vector3(m_fSize)), a_v3Color, RENDER_WIRE);
 }
 
-void Simplex::MyOctree::DisplayLeafs(vector3 a_v3Color)
+void MyOctree::DisplayLeafs(vector3 a_v3Color)
 {
 	//loops through each child in lChild and renders it
 	uint nLeaves = m_lChild.size();
@@ -227,7 +254,7 @@ void Simplex::MyOctree::DisplayLeafs(vector3 a_v3Color)
 
 }
 
-void Simplex::MyOctree::ClearEntityList(void)
+void MyOctree::ClearEntityList(void)
 {
 	//calls clearEntityList for each child in the list of children
 	for (uint i = 0; i < m_uChildren; i++) {
@@ -235,7 +262,7 @@ void Simplex::MyOctree::ClearEntityList(void)
 	}
 }
 
-void Simplex::MyOctree::Subdivide(void)
+void MyOctree::Subdivide(void)
 {
 	if (m_uLevel >= m_uMaxLevel) {
 		return;//subdivision has already reached bottom of tree
@@ -297,7 +324,7 @@ void Simplex::MyOctree::Subdivide(void)
 	}
 }
 
-Simplex::MyOctree* Simplex::MyOctree::GetChild(uint a_nChild)
+MyOctree* MyOctree::GetChild(uint a_nChild)
 {
 	if (a_nChild > 7) {
 		return nullptr;
@@ -305,18 +332,18 @@ Simplex::MyOctree* Simplex::MyOctree::GetChild(uint a_nChild)
 	return m_pChild[a_nChild];
 }
 
-Simplex::MyOctree* Simplex::MyOctree::GetParent(void)
+MyOctree* MyOctree::GetParent(void)
 {
 	return m_pParent;
 }
 
-bool Simplex::MyOctree::IsLeaf(void)
+bool MyOctree::IsLeaf(void)
 {
 	if (m_uChildren == 0) return true;
 	else return false;
 }
 
-bool Simplex::MyOctree::ContainsMoreThan(uint a_nEntities)
+bool MyOctree::ContainsMoreThan(uint a_nEntities)
 {
 	uint currCount = 0;//count of objects in current octant
 	uint objectCount = m_pEntityMngr->GetEntityCount();
@@ -329,7 +356,7 @@ bool Simplex::MyOctree::ContainsMoreThan(uint a_nEntities)
 	return false;
 }
 
-void Simplex::MyOctree::KillBranches(void)
+void MyOctree::KillBranches(void)
 {
 	//recursivley loops through the children up the tree as each set of children is set to nullptr
 	for (uint i = 0; i < m_uChildren; i++) {
@@ -340,7 +367,7 @@ void Simplex::MyOctree::KillBranches(void)
 	m_uChildren = 0;
 }
 
-void Simplex::MyOctree::ConstructTree(uint a_nMaxLevel)
+void MyOctree::ConstructTree(uint a_nMaxLevel)
 {
 	if (m_uLevel != 0)
 		return;
@@ -364,7 +391,7 @@ void Simplex::MyOctree::ConstructTree(uint a_nMaxLevel)
 	ConstructList();
 }
 
-void Simplex::MyOctree::AssignIDtoEntity(void)
+void MyOctree::AssignIDtoEntity(void)
 {
 	for (uint uChild = 0; uChild < m_uChildren; uChild++) {
 		m_pChild[uChild]->AssignIDtoEntity();
@@ -381,12 +408,12 @@ void Simplex::MyOctree::AssignIDtoEntity(void)
 	}
 }
 
-uint Simplex::MyOctree::GetOctantCount(void)
+uint MyOctree::GetOctantCount(void)
 {
 	return m_uOctantCount;
 }
 
-void Simplex::MyOctree::Release(void)
+void MyOctree::Release(void)
 {
 	//root release
 	if (m_uLevel == 0) {
@@ -398,35 +425,9 @@ void Simplex::MyOctree::Release(void)
 	m_lChild.clear();
 }
 
-//sets initial values of MyOctree
-void Simplex::MyOctree::Init(void)
-{
-	m_uChildren = 0; //no children
-	m_fSize = 0.0f; //initial size  = 0
 
-	m_uID = m_uOctantCount; //the id of the first octant is 0
-	m_uLevel = 0; //no subdivisions, so level is 0
 
-	//no max.min/center values have been added
-	m_v3Center = vector3(0.0f);
-	m_v3Max = vector3(0.0f);
-	m_v3Min = vector3(0.0f);
-
-	m_pEntityMngr = MyEntityManager::GetInstance();
-	m_pMeshMngr = MeshManager::GetInstance();
-	
-
-	m_pRoot = nullptr;
-	m_pParent = nullptr;
-
-	//parent node has 8 subdivisions, create the children
-	for (uint i = 0; i < 8; i++) {
-		m_pChild[i] = nullptr;
-	}
-
-}
-
-void Simplex::MyOctree::ConstructList(void)
+void MyOctree::ConstructList(void)
 {
 	for (uint i = 0; i < m_uChildren; i++) {
 		m_pChild[i]->ConstructList();
